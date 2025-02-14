@@ -1,5 +1,6 @@
 import 'package:band_name/models/band.dart';
 import 'package:flutter/material.dart';
+import 'package:pie_chart/pie_chart.dart';
 import 'package:provider/provider.dart';
 
 import '../services/socket_service.dart';
@@ -17,10 +18,7 @@ class _HomeState extends State<Home> {
   @override
   void initState() {
     final socketService = Provider.of<SocketService>(context, listen: false);
-    socketService.socket?.on('active-bands', (payload) {
-      bands = (payload as List).map((band) => Band.fromMap(band)).toList();
-      setState(() {});
-    });
+    socketService.socket?.on('active-bands', _handleActiveBands);
 
     super.initState();
   }
@@ -55,10 +53,19 @@ class _HomeState extends State<Home> {
           )
         ],
       ),
-      body: ListView.builder(
-        itemCount: bands.length,
-        itemBuilder: (BuildContext context, int index) =>
-            _bandTile(bands[index]),
+      body: Column(
+        children: [
+          const SizedBox(
+            height: 10,
+          ),
+          _showGraph(),
+          Expanded(
+              child: ListView.builder(
+            itemCount: bands.length,
+            itemBuilder: (BuildContext context, int index) =>
+                _bandTile(bands[index]),
+          ))
+        ],
       ),
     );
   }
@@ -124,5 +131,41 @@ class _HomeState extends State<Home> {
             ],
           );
         });
+  }
+
+  _handleActiveBands(dynamic payload) {
+    bands = (payload as List).map((band) => Band.fromMap(band)).toList();
+    setState(() {});
+  }
+
+  Widget _showGraph() {
+    Map<String, double> dataMap = {};
+    for (var band in bands) {
+      dataMap.putIfAbsent(band.name, () => band.votes.toDouble());
+    }
+    if (dataMap.isEmpty) {
+      return const SizedBox(
+        width: double.infinity,
+        height: 200,
+        child: Center(child: Text('No data available')),
+      );
+    }
+    return SizedBox(
+        width: double.infinity,
+        height: 150,
+        child: PieChart(
+            animationDuration: const Duration(milliseconds: 800),
+            centerText: dataMap.length > 1 ? '' : 'No data available',
+            chartValuesOptions: const ChartValuesOptions(
+              showChartValueBackground: true,
+              showChartValues: true,
+              showChartValuesInPercentage: false,
+              showChartValuesOutside: false,
+              decimalPlaces: 1,
+            ),
+            chartLegendSpacing: 32,
+            ringStrokeWidth: 32,
+            chartType: ChartType.ring,
+            dataMap: dataMap));
   }
 }
