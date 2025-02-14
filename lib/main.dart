@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
       providers: [ChangeNotifierProvider(create: (_) => SocketService())],
       child: MaterialApp(
         title: 'Material App',
-        initialRoute: 'status',
+        initialRoute: 'home',
         routes: {
           'home': (_) => const Home(),
           'status': (_) => const ServerStatusPage(),

@@ -7,7 +7,6 @@ class SocketService with ChangeNotifier {
   ServerStatus _serverStatus = ServerStatus.connecting;
   ServerStatus get serverStatus => _serverStatus;
   IO.Socket? _socket;
-
   IO.Socket? get socket => _socket;
 
   SocketService() {
